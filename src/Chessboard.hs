@@ -12,7 +12,8 @@ module ChessBoard (
     update,
     remove,
     toList,
-    movePiece
+    movePiece,
+    color
 ) where
 
 import qualified Data.Char as C
@@ -38,6 +39,9 @@ instance Show Piece where
     show (Piece White t) = map C.toUpper $ show t
     show (Piece Black t) = show t
 
+color :: Piece -> Color
+color (Piece c _) = c
+
 data ChessBoard = ChessBoard
     { toVector :: !(V.Vector (Maybe Piece))
     , nextMove :: !Color
@@ -46,8 +50,7 @@ data ChessBoard = ChessBoard
 switch :: ChessBoard -> ChessBoard
 switch !cb = ChessBoard { toVector = toVector cb, nextMove = other $ nextMove cb }
 
-
--- Printing the board
+-- Board initialization
 instance Show ChessBoard where
     show cb = unlines (V.toList $ V.reverse $ V.imap showLine (slice8 (toVector cb)))
         ++ "  " ++ concat (replicate 8 "+---") ++ "+\n    "
@@ -95,7 +98,6 @@ remove :: Position -> ChessBoard -> ChessBoard
 remove !pos !cb = cb { toVector = toVector cb V.// [(i, Nothing)] }
     where i = toIndex pos
 
--- Converting the board to a list of maybe pieces
 toList :: ChessBoard -> [Maybe Piece]
 toList !cb = V.toList $ toVector cb
 
@@ -103,4 +105,9 @@ movePiece :: ChessBoard -> Position -> Position -> ChessBoard
 movePiece board from to =
     case at board from of
         Nothing -> board
-        Just piece -> update to piece $ remove from board
+        Just piece ->
+            case at board to of
+                Just targetPiece -> if color piece /= color targetPiece
+                                    then update to piece $ remove from board
+                                    else board
+                Nothing -> update to piece $ remove from board

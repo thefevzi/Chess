@@ -20,9 +20,8 @@ module Moves (
 import ChessBoard
 import Position
 import Color
-import Data.Maybe (isJust, isNothing)
+import Data.Maybe (isJust, isNothing, fromJust)
 
--- Piece movement validation
 isValidPieceMove :: ChessBoard -> Position -> Position -> Bool
 isValidPieceMove board from to =
     case at board from of
@@ -34,25 +33,26 @@ isValidPieceMove board from to =
         Just (Piece _ King)   -> isValidKingMove board from to
         _ -> False
 
--- Function to simulate a move and check if it leaves the king in check
+-- To check if the move is leaving the king in check
 leavesKingInCheck :: ChessBoard -> Position -> Position -> Bool
 leavesKingInCheck board from to =
     let newBoard = movePiece board from to
-    in isInCheck newBoard (nextMove board)
+    in isInCheck newBoard (color $ fromJust $ at board from)
 
--- Function to validate a move considering the rules and check condition
+-- Checking if it is a valid move
 isValidMove :: ChessBoard -> Position -> Position -> Bool
 isValidMove board from to =
     isJust (at board from) &&
     (toIndex from /= toIndex to) &&
     isValidPieceMove board from to &&
-    not (leavesKingInCheck board from to)
+    not (leavesKingInCheck board from to) &&
+    (maybe True (\p -> color p /= color (fromJust (at board from))) (at board to))
 
--- Check if a given color is in check
+-- Check if there is a check
 isInCheck :: ChessBoard -> Color -> Bool
 isInCheck board color = any (isThreatened board (kingPos board color)) (opponentPieces board (other color))
 
--- Piece-specific move validations
+
 isValidKnightMove :: ChessBoard -> Position -> Position -> Bool
 isValidKnightMove _ (Position r1 f1) (Position r2 f2) =
     let dr = abs (r2 - r1)
@@ -111,14 +111,16 @@ isValidDiagonalMove board (Position r1 f1) (Position r2 f2)
         dr = if r2 > r1 then 1 else -1
         df = if f2 > f1 then 1 else -1
 
--- Find the position of the king of the given color
+-- Find the position of the king of the given color -- King not found error has been added
 kingPos :: ChessBoard -> Color -> Position
-kingPos board color = head [pos | (pos, Just (Piece c King)) <- zip [Position r f | r <- [0..7], f <- [0..7]] (toList board), c == color]
+kingPos board color = case [pos | (pos, Just (Piece c King)) <- zip [Position r f | r <- [0..7], f <- [0..7]] (toList board), c == color] of
+    [] -> error $ "kingPos: No king found on the board for " ++ show color ++ "\n" ++ show board
+    (k:_) -> k
 
--- Get all opponent piece positions
+-- Get all the piece positions for opponent
 opponentPieces :: ChessBoard -> Color -> [Position]
 opponentPieces board color = [pos | (pos, Just (Piece c _)) <- zip [Position r f | r <- [0..7], f <- [0..7]] (toList board), c == color]
 
--- Check if a position is threatened by an opponent piece
+-- If a position is threatened
 isThreatened :: ChessBoard -> Position -> Position -> Bool
 isThreatened board pos oppPos = isValidMove (switch board) oppPos pos

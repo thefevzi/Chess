@@ -1,5 +1,5 @@
 import System.Environment (getArgs)
-import System.Exit (exitFailure)
+import System.Exit (exitSuccess)
 import ChessBoard
 import Color
 import Position
@@ -8,7 +8,6 @@ import WinCheck
 import Data.Char (ord)
 import Data.Maybe (isJust)
 
--- input to move function
 parseMove :: String -> Maybe (Position, Position)
 parseMove [f1, r1, f2, r2]
     | all (`elem` ['a'..'h']) [f1, f2] && all (`elem` ['1'..'8']) [r1, r2] =
@@ -25,7 +24,13 @@ gameLoop :: ChessBoard -> IO ()
 gameLoop board = do
     printBoard board
     if isCheckmate board (nextMove board)
-    then putStrLn $ "Checkmate! " ++ show (other (nextMove board)) ++ " wins."
+    then do
+        putStrLn $ "Checkmate! " ++ show (other (nextMove board)) ++ " wins."
+        putStrLn "Take your revenge? (y/n):"
+        revenge <- getLine
+        if revenge == "y" || revenge == "Y"
+        then gameLoop initialPosition
+        else putStrLn "Maybe Later." >> exitSuccess
     else if isInCheck board (nextMove board)
          then putStrLn $ "Check! " ++ show (nextMove board) ++ " is in check."
          else putStrLn $ "Next move: " ++ show (nextMove board)
@@ -37,12 +42,20 @@ gameLoop board = do
             gameLoop board
         Just (from, to) ->
             if isValidMove board from to
-            then gameLoop (movePiece (switch board) from to)
+            then if isCheckmate (movePiece (switch board) from to) (nextMove board)
+                 then do
+                     printBoard (movePiece (switch board) from to)
+                     putStrLn $ "Checkmate! " ++ show (other (nextMove board)) ++ " wins."
+                     putStrLn "Take your revenge? (y/n):"
+                     revenge <- getLine
+                     if revenge == "y" || revenge == "Y"
+                     then gameLoop initialPosition
+                     else putStrLn "Maybe Later." >> exitSuccess
+                 else gameLoop (movePiece (switch board) from to)
             else do
                 putStrLn "Invalid move. Try again."
                 gameLoop board
 
--- The main cases
 main :: IO ()
 main = do
     args <- getArgs
@@ -51,7 +64,8 @@ main = do
             putStrLn "Starting Human vs. Human Chess Game..."
             putStrLn "Welcome to Haskell Chess"
             gameLoop initialPosition
-        _ -> do
-            -- putStrLn "Starting AI vs. AI Chess Game..."
-            -- putstrLn "Welcome to Haskell Chess"
-            exitFailure
+        ["2"] -> do
+            putStrLn "Starting AI vs. AI Chess Game..."
+            putStrLn "Welcome to Haskell Chess"
+            --exitFailure
+            gameLoop initialPosition
