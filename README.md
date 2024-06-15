@@ -17,7 +17,8 @@ $ git clone https://github.com/0Megalodon/Chess.git
 $ cabal build
 $ cabal run chess 1 or cabal run chess 2
 ```
-cabal run chess 1, starts Human vs Human mod 
+cabal run chess 1, starts Human vs Human mod
+
 cabal run chess 2, starts Human vs AI
 
 ## Features to be Added
