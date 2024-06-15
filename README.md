@@ -12,9 +12,13 @@ Project mainly focuses on core gameplay mechanics with using command line interf
 `cabal` is required to play the game
 
 ```sh
-$ git clone 
+$ git clone https://github.com/0Megalodon/Chess.git
+$ cabal build
+$ cabal run chess 1 or cabal run chess 2
 ```
-
+cabal run chess 1, starts Human vs Human mod and cabal run chess 2, starts Human vs AI
 
 
 ## Features to be Added
+• AI which uses minimax algorithm, enhanced by alpha-beta pruning
+• The depth of search for AI
