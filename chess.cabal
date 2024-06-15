@@ -1,0 +1,17 @@
+cabal-version:       >=1.24
+name:                chess
+version:             0.1.0.0
+synopsis:            Chess game in Haskell
+description:         Can be played as 2 players with AI or with human
+license:             BSD3
+author:              Fevzi Erzeybek
+maintainer:          erzeybekfevzi@gmail.com
+build-type:          Simple
+category:            Game
+
+executable chess
+  main-is:             Main.hs
+  build-depends:       base >=4.7 && <5, vector >=0.12 && <0.14
+  hs-source-dirs:      src
+  other-modules:       ChessBoard, Color, Position, Moves, WinCheck
+  default-language:    Haskell2010
