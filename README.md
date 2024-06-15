@@ -4,8 +4,8 @@ This is a work in progress for now, it features only human vs human mod.
 
 # Description
 I have created this project for my Non-procedural Programming class as a semester project. The game can be played in two mods:
-> Human vs Human
-> Human vs AI
+1. Human vs Human
+2. Human vs AI
 Project mainly focuses on core gameplay mechanics with using command line interface
 
 # How to Run
