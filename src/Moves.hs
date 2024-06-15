@@ -21,7 +21,6 @@ import Position
 import Color
 import Data.Maybe (isJust, isNothing, fromJust)
 
--- Piece movement validation
 isValidPieceMove :: ChessBoard -> Position -> Position -> Bool
 isValidPieceMove board from to =
     case at board from of
@@ -50,13 +49,13 @@ isValidPawnMove' board color (Position r1 f1) (Position r2 f2)
   where
     (direction, initialRank) = if color == White then (1, 1) else (-1, 6) 
 
--- Function to simulate a move and check if it leaves the king in check
+-- Function to check if it leaves the king in check
 leavesKingInCheck :: ChessBoard -> Position -> Position -> Bool
 leavesKingInCheck board from to =
     let newBoard = movePiece board from to
     in isInCheck newBoard (color $ fromJust $ at board from)
 
--- Function to validate a move considering the rules and check condition
+-- Function to validate a move
 isValidMove :: ChessBoard -> Position -> Position -> Bool
 isValidMove board from to =
     isJust (at board from) &&
@@ -69,7 +68,6 @@ isValidMove board from to =
 isInCheck :: ChessBoard -> Color -> Bool
 isInCheck board color = any (isThreatened board (kingPos board color)) (opponentPieces board (other color))
 
--- Piece-specific move validations
 isValidKnightMove :: ChessBoard -> Position -> Position -> Bool
 isValidKnightMove _ (Position r1 f1) (Position r2 f2) =
     let dr = abs (r2 - r1)
