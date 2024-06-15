@@ -42,6 +42,7 @@ gameLoop board = do
                 putStrLn "Invalid move. Try again."
                 gameLoop board
 
+-- The main cases
 main :: IO ()
 main = do
     args <- getArgs
