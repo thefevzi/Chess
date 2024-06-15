@@ -21,5 +21,5 @@ cabal run chess 1, starts Human vs Human mod and cabal run chess 2, starts Human
 
 
 ## Features to be Added
-• AI which uses minimax algorithm, enhanced by alpha-beta pruning
+• AI which uses minimax algorithm, enhanced by alpha-beta pruning <br />
 • The depth of search for AI
