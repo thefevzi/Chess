@@ -18,7 +18,11 @@ $ cabal build
 $ cabal run chess 1 or cabal run chess 2
 ```
 cabal run chess 1, starts Human vs Human mod <br />
+<<<<<<< HEAD
 cabal run chess 2, starts Human vs AI mod
+=======
+cabal run chess 2, starts Human vs AI
+>>>>>>> cfd09cd93270f530b92f95ef3c58e3b0a6a18b67
 
 ## Features to be Added
 • AI which uses minimax algorithm, enhanced by alpha-beta pruning <br />
