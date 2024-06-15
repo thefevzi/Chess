@@ -49,7 +49,9 @@ main = do
     case args of
         ["1"] -> do
             putStrLn "Starting Human vs. Human Chess Game..."
+            putStrLn "Welcome to Haskell Chess"
             gameLoop initialPosition
         _ -> do
             putStrLn "Starting AI vs. AI Chess Game..."
+            putstrLn "Welcome to Haskell Chess"
             exitFailure
