@@ -1,9 +1,11 @@
 {-# LANGUAGE BangPatterns #-}
 
-module ChessBoard (
+module Chessboard
+ (
     PieceType(..),
     Piece(..),
-    ChessBoard,
+    Chessboard
+    ,
     nextMove,
     switch,
     emptyBoard,
@@ -42,16 +44,22 @@ instance Show Piece where
 color :: Piece -> Color
 color (Piece c _) = c
 
-data ChessBoard = ChessBoard
+data Chessboard
+     = Chessboard
+
     { toVector :: !(V.Vector (Maybe Piece))
     , nextMove :: !Color
     }
 
-switch :: ChessBoard -> ChessBoard
-switch !cb = ChessBoard { toVector = toVector cb, nextMove = other $ nextMove cb }
+switch :: Chessboard
+ -> Chessboard
+
+switch !cb = Chessboard
+ { toVector = toVector cb, nextMove = other $ nextMove cb }
 
 -- Board initialization
-instance Show ChessBoard where
+instance Show Chessboard
+ where
     show cb = unlines (V.toList $ V.reverse $ V.imap showLine (slice8 (toVector cb)))
         ++ "  " ++ concat (replicate 8 "+---") ++ "+\n    "
         ++ concatMap ((:[]) . showFile) [0..7] ++ " " ++ show (nextMove cb)
@@ -72,11 +80,15 @@ instance Show ChessBoard where
                  | otherwise = h `V.cons` slice8 t
               where (h, t) = V.splitAt 8 v
 
-emptyBoard :: Color -> ChessBoard
-emptyBoard !firstPlayer = ChessBoard { toVector = V.replicate 64 Nothing, nextMove = firstPlayer }
+emptyBoard :: Color -> Chessboard
 
-initialPosition :: ChessBoard
-initialPosition = ChessBoard { toVector = V.fromList $ concat [whiteRearRow, whiteFrontRow, emptyRows, blackFrontRow, blackRearRow], nextMove = White }
+emptyBoard !firstPlayer = Chessboard
+ { toVector = V.replicate 64 Nothing, nextMove = firstPlayer }
+
+initialPosition :: Chessboard
+
+initialPosition = Chessboard
+ { toVector = V.fromList $ concat [whiteRearRow, whiteFrontRow, emptyRows, blackFrontRow, blackRearRow], nextMove = White }
     where
     whiteRearRow  = map (Just . Piece White) [Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook]
     whiteFrontRow = replicate 8 $ Just $ Piece White Pawn
@@ -86,22 +98,30 @@ initialPosition = ChessBoard { toVector = V.fromList $ concat [whiteRearRow, whi
     blackRearRow  = map (Just . Piece Black) [Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook]
 
 -- Getting the piece to the given position
-at :: ChessBoard -> Position -> Maybe Piece
+at :: Chessboard
+ -> Position -> Maybe Piece
 at !cb !p = if i >= 0 && i < 64 then toVector cb V.! i else Nothing
     where i = toIndex p
 
-update :: Position -> Piece -> ChessBoard -> ChessBoard
+update :: Position -> Piece -> Chessboard
+ -> Chessboard
+
 update !pos !piece !cb = cb { toVector = toVector cb V.// [(i, Just piece)] }
     where i = toIndex pos
 
-remove :: Position -> ChessBoard -> ChessBoard
+remove :: Position -> Chessboard
+ -> Chessboard
+
 remove !pos !cb = cb { toVector = toVector cb V.// [(i, Nothing)] }
     where i = toIndex pos
 
-toList :: ChessBoard -> [Maybe Piece]
+toList :: Chessboard
+ -> [Maybe Piece]
 toList !cb = V.toList $ toVector cb
 
-movePiece :: ChessBoard -> Position -> Position -> ChessBoard
+movePiece :: Chessboard
+ -> Position -> Position -> Chessboard
+
 movePiece board from to =
     case at board from of
         Nothing -> board

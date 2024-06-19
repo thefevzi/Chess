@@ -1,6 +1,6 @@
 import System.Environment (getArgs)
 import System.Exit (exitSuccess)
-import ChessBoard
+import Chessboard
 import Color
 import Position
 import Moves
@@ -16,11 +16,11 @@ parseMove [f1, r1, f2, r2]
     | otherwise = Nothing
 parseMove _ = Nothing
 
-printBoard :: ChessBoard -> IO ()
+printBoard :: Chessboard -> IO ()
 printBoard = putStrLn . show
 
 -- Game loop for human vs. human
-gameLoop :: ChessBoard -> IO ()
+gameLoop :: Chessboard -> IO ()
 gameLoop board = do
     printBoard board
     if isCheckmate board (nextMove board)
