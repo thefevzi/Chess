@@ -3,6 +3,7 @@
 module Moves (
     isValidPieceMove,
     isValidMove,
+    isValidCastleMove,
     leavesKingInCheck,
     isValidKnightMove,
     isValidPawnMove,
@@ -48,6 +49,20 @@ isValidPawnMove' board color (Position r1 f1) (Position r2 f2)
     | otherwise = False
   where
     (direction, initialRank) = if color == White then (1, 1) else (-1, 6) 
+
+-- Castling
+isValidCastleMove :: Chessboard -> Position -> Position -> Bool
+isValidCastleMove board (Position r1 f1) (Position r2 f2)
+    | r1 /= r2 = False
+    | abs (f2 - f1) /= 2 = False
+    | otherwise =
+        let rookPos = if f2 > f1 then Position r1 7 else Position r1 0
+            rook = at board rookPos
+            emptyBetween = all (isNothing . at board) [Position r1 f | f <- [min f1 f2 + 1 .. max f1 f2 - 1]]
+        in isJust rook && color (fromJust rook) == color (fromJust (at board (Position r1 f1)))
+         && emptyBetween && 
+         not (leavesKingInCheck board (Position r1 f1) (Position r1 ((f1 + f2) `div` 2)))
+
 
 -- Function to check if it leaves the king in check
 leavesKingInCheck :: Chessboard -> Position -> Position -> Bool

@@ -42,16 +42,18 @@ gameLoop board = do
             gameLoop board
         Just (from, to) ->
             if isValidMove board from to
-            then if isCheckmate (movePiece (switch board) from to) (nextMove board)
-                 then do
-                     printBoard (movePiece (switch board) from to)
-                     putStrLn $ "Checkmate! " ++ show (other (nextMove board)) ++ " wins."
-                     putStrLn "Take your revenge? (y/n):"
-                     revenge <- getLine
-                     if revenge == "y" || revenge == "Y"
-                     then gameLoop initialPosition
-                     else putStrLn "Maybe Later." >> exitSuccess
-                 else gameLoop (movePiece (switch board) from to)
+            then if isValidCastleMove board from to
+                 then gameLoop (movePieceCastling (switch board) from to)
+                 else if isCheckmate (movePiece (switch board) from to) (nextMove board)
+                      then do
+                          printBoard (movePiece (switch board) from to)
+                          putStrLn $ "Checkmate! " ++ show (other (nextMove board)) ++ " wins."
+                          putStrLn "Take your revenge? (y/n):"
+                          revenge <- getLine
+                          if revenge == "y" || revenge == "Y"
+                          then gameLoop initialPosition
+                          else putStrLn "Maybe Later." >> exitSuccess
+                      else gameLoop (movePiece (switch board) from to)
             else do
                 putStrLn "Invalid move. Try again."
                 gameLoop board
@@ -63,6 +65,7 @@ main = do
         ["1"] -> do
             putStrLn "Starting Human vs. Human Chess Game..."
             putStrLn "Welcome to Haskell Chess"
+            putStrLn "Black"
             gameLoop initialPosition
         ["2"] -> do
             putStrLn "Starting Human vs. AI Chess Game..."

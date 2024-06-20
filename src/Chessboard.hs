@@ -15,6 +15,7 @@ module Chessboard
     remove,
     toList,
     movePiece,
+    movePieceCastling,
     color
 ) where
 
@@ -53,7 +54,7 @@ data Chessboard
 
 switch :: Chessboard
  -> Chessboard
-
+ 
 switch cb = Chessboard
  { toVector = toVector cb
  , nextMove = other $ nextMove cb }
@@ -85,13 +86,14 @@ instance Show Chessboard
 emptyBoard :: Color -> Chessboard
 
 emptyBoard firstPlayer = Chessboard
- { toVector = V.replicate 64 Nothing, nextMove = firstPlayer }
+ { toVector = V.replicate 64 Nothing
+ , nextMove = firstPlayer }
 
 initialPosition :: Chessboard
 
 initialPosition = Chessboard
- { toVector = V.fromList $ concat [whiteRearRow, whiteFrontRow, 
-            emptyRows, blackFrontRow, blackRearRow], nextMove = White }
+ { toVector = V.fromList $ concat [whiteRearRow, whiteFrontRow, emptyRows
+ , blackFrontRow, blackRearRow], nextMove = White }
     where
     whiteRearRow  = map (Just . Piece White) [Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook]
     whiteFrontRow = replicate 8 $ Just $ Piece White Pawn
@@ -122,9 +124,7 @@ toList :: Chessboard
  -> [Maybe Piece]
 toList cb = V.toList $ toVector cb
 
-movePiece :: Chessboard
- -> Position -> Position -> Chessboard
-
+movePiece :: Chessboard -> Position -> Position -> Chessboard
 movePiece board from to =
     case at board from of
         Nothing -> board
@@ -134,3 +134,15 @@ movePiece board from to =
                                     then update to piece $ remove from board
                                     else board
                 Nothing -> update to piece $ remove from board
+
+movePieceCastling :: Chessboard -> Position -> Position -> Chessboard
+movePieceCastling board from to =
+    case (at board from, at board rookFrom) of
+        (Just king, Just rook) ->
+            let board1 = update to king (remove from board)
+                board2 = update rookTo rook (remove rookFrom board1)
+            in board2
+        _ -> board
+    where
+        rookFrom = if file to > file from then Position (rank from) 7 else Position (rank from) 0
+        rookTo = Position (rank from) ((file from + file to + 1) `div` 2)
