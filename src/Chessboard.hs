@@ -62,7 +62,7 @@ instance Show Chessboard
  where
     show cb = unlines (V.toList $ V.reverse $ V.imap showLine (slice8 (toVector cb)))
         ++ "  " ++ concat (replicate 8 "+---") ++ "+\n    "
-        ++ concatMap ((:[]) . showFile) [0..7] ++ " " ++ show (nextMove cb)
+        ++ concatMap ((\f -> f ++ "   ") . (:[]) . showFile) [0..7] ++ " " ++ "\n" ++ show (nextMove cb)
         where
         showLine :: Int -> V.Vector (Maybe Piece) -> String
         showLine rank v =
