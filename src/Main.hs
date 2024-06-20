@@ -65,8 +65,9 @@ main = do
             putStrLn "Welcome to Haskell Chess"
             gameLoop initialPosition
         ["2"] -> do
-            putStrLn "Starting AI vs. AI Chess Game..."
+            putStrLn "Starting Human vs. AI Chess Game..."
             putStrLn "Welcome to Haskell Chess"
             putStrLn "This part will be implemented"
             --exitFailure
             exitSuccess
+        _ -> putStrLn "Please choose: chess 1 (for Human vs Human) | chess 2 (for Human vs AI)"
