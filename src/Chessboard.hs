@@ -34,7 +34,7 @@ instance Show PieceType where
     show Queen  = "q"
     show King   = "k"
 
-data Piece = Piece !Color !PieceType
+data Piece = Piece Color PieceType
     deriving Eq
 
 instance Show Piece where
@@ -47,22 +47,24 @@ color (Piece c _) = c
 data Chessboard
      = Chessboard
 
-    { toVector :: !(V.Vector (Maybe Piece))
-    , nextMove :: !Color
+    { toVector :: V.Vector (Maybe Piece)
+    , nextMove :: Color
     }
 
 switch :: Chessboard
  -> Chessboard
 
-switch !cb = Chessboard
- { toVector = toVector cb, nextMove = other $ nextMove cb }
+switch cb = Chessboard
+ { toVector = toVector cb
+ , nextMove = other $ nextMove cb }
 
 -- Board initialization
 instance Show Chessboard
  where
     show cb = unlines (V.toList $ V.reverse $ V.imap showLine (slice8 (toVector cb)))
         ++ "  " ++ concat (replicate 8 "+---") ++ "+\n    "
-        ++ concatMap ((\f -> f ++ "   ") . (:[]) . showFile) [0..7] ++ " " ++ "\n" ++ show (nextMove cb)
+        ++ concatMap ((\f -> f ++ "   ") . (:[]) . showFile) [0..7] ++
+         " " ++ "\n" ++ show (nextMove cb)
         where
         showLine :: Int -> V.Vector (Maybe Piece) -> String
         showLine rank v =
@@ -82,13 +84,14 @@ instance Show Chessboard
 
 emptyBoard :: Color -> Chessboard
 
-emptyBoard !firstPlayer = Chessboard
+emptyBoard firstPlayer = Chessboard
  { toVector = V.replicate 64 Nothing, nextMove = firstPlayer }
 
 initialPosition :: Chessboard
 
 initialPosition = Chessboard
- { toVector = V.fromList $ concat [whiteRearRow, whiteFrontRow, emptyRows, blackFrontRow, blackRearRow], nextMove = White }
+ { toVector = V.fromList $ concat [whiteRearRow, whiteFrontRow, 
+            emptyRows, blackFrontRow, blackRearRow], nextMove = White }
     where
     whiteRearRow  = map (Just . Piece White) [Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook]
     whiteFrontRow = replicate 8 $ Just $ Piece White Pawn
@@ -100,24 +103,24 @@ initialPosition = Chessboard
 -- Getting the piece to the given position
 at :: Chessboard
  -> Position -> Maybe Piece
-at !cb !p = if i >= 0 && i < 64 then toVector cb V.! i else Nothing
+at cb p = if i >= 0 && i < 64 then toVector cb V.! i else Nothing
     where i = toIndex p
 
 update :: Position -> Piece -> Chessboard
  -> Chessboard
 
-update !pos !piece !cb = cb { toVector = toVector cb V.// [(i, Just piece)] }
+update pos piece cb = cb { toVector = toVector cb V.// [(i, Just piece)] }
     where i = toIndex pos
 
 remove :: Position -> Chessboard
  -> Chessboard
 
-remove !pos !cb = cb { toVector = toVector cb V.// [(i, Nothing)] }
+remove pos cb = cb { toVector = toVector cb V.// [(i, Nothing)] }
     where i = toIndex pos
 
 toList :: Chessboard
  -> [Maybe Piece]
-toList !cb = V.toList $ toVector cb
+toList cb = V.toList $ toVector cb
 
 movePiece :: Chessboard
  -> Position -> Position -> Chessboard
