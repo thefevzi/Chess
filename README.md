@@ -23,9 +23,9 @@ cabal run chess 2, starts Human vs AI mod
 ## Features to be Added
 • AI which uses minimax algorithm, enhanced by alpha-beta pruning [ ] <br />
 • The depth of search for AI [ ] <br />
-• cabal arguments [x] <br />
-• Castling [x] <br />
-• Pawn promotion [ ] <br />
-• Pinned check [ ] <br />
+• cabal arguments [X] <br />
+• Castling [X] <br />
+• Pawn promotion [X] <br />
+• Pinned check [X] <br />
 • Stalemate [ ] <br />
-• Pawn to not hope over pieces [ ]
+• Pawn to not hope over pieces [X]

@@ -7,16 +7,13 @@ module Chessboard
     Chessboard,
     nextMove,
     switch,
-    emptyBoard,
     initialPosition,
     at,
     update,
-    remove,
     toList,
     movePiece,
     movePieceCastling,
     color,
-    promotePawn
 ) where
 
 import qualified Data.Char as C

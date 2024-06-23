@@ -1,19 +1,8 @@
 {-# LANGUAGE BangPatterns #-}
 
 module Moves (
-    isValidPieceMove,
     isValidMove,
     isValidCastleMove,
-    leavesKingInCheck,
-    isValidKnightMove,
-    isValidPawnMove,
-    isValidPawnMove',
-    isValidBishopMove,
-    isValidRookMove,
-    isValidQueenMove,
-    isValidKingMove,
-    isValidStraightMove,
-    isValidDiagonalMove,
     isInCheck
 ) where
 
