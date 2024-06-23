@@ -1,6 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 
-module WinCheck (
+module CheckEnd (
     isCheckmate,
     isStalemate
 ) where
@@ -20,7 +20,9 @@ isStalemate board color = not (isInCheck board color) && noLegalMoves board colo
 
 -- Checking if there are any legal moves?
 noLegalMoves :: Chessboard -> Color -> Bool
-noLegalMoves board color = all (== False) [isValidMove board from to | from <- ownPieces, to <- allPositions]
+noLegalMoves board color =
+     all (== False) [isValidMove board from to | from <- ownPieces, to <- allPositions]
     where
-        ownPieces = [pos | (pos, Just (Piece c _)) <- zip [Position r f | r <- [0..7], f <- [0..7]] (toList board), c == color]
+        ownPieces = [pos | (pos, Just (Piece c _))
+         <- zip [Position r f | r <- [0..7], f <- [0..7]] (toList board), c == color]
         allPositions = [Position r f | r <- [0..7], f <- [0..7]]
