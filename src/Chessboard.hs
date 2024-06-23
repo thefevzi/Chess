@@ -108,11 +108,6 @@ remove pos cb = cb { toVector = toVector cb V.// [(i, Nothing)] }
 toList :: Chessboard -> [Maybe Piece]
 toList cb = V.toList $ toVector cb
 
--- Pawn Promotion --
-promotePawn :: Piece -> PieceType -> Piece
-promotePawn (Piece color Pawn) newType = Piece color newType
-promotePawn piece _ = piece 
-
 movePiece :: Chessboard -> Position -> Position -> Chessboard
 movePiece board from to =
     case at board from of
@@ -122,13 +117,18 @@ movePiece board from to =
             then board
             else
                 let board' = update to piece $ remove from board
-                in if isPromotion piece to
+                in if Promotion piece to
                    then update to (promotePawn piece Queen) board'
                    else board'
   where
-    isPromotion (Piece White Pawn) (Position 0 _) = True
-    isPromotion (Piece Black Pawn) (Position 7 _) = True
-    isPromotion _ _ = False
+    Promotion (Piece White Pawn) (Position 0 _) = True
+    Promotion (Piece Black Pawn) (Position 7 _) = True
+    Promotion _ _ = False
+
+-- Pawn Promotion --
+promotePawn :: Piece -> PieceType -> Piece
+promotePawn (Piece color Pawn) newType = Piece color newType
+promotePawn piece _ = piece 
 
 movePieceCastling :: Chessboard -> Position -> Position -> Chessboard
 movePieceCastling board from to =
