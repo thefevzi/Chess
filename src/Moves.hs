@@ -30,12 +30,6 @@ isValidDiagonalMove board (Position r1 f1) (Position r2 f2)
         dr = if r2 > r1 then 1 else -1
         df = if f2 > f1 then 1 else -1
 
-isValidPawnMove :: Chessboard -> Position -> Position -> Bool
-isValidPawnMove board from to =
-    case at board from of
-        Just (Piece color Pawn) -> isValidPawnMove' board color from to
-        _ -> False
-
 -- Checking ValidPawnMove for White and Black pawns
 isValidPawnMove' :: Chessboard -> Color -> Position -> Position -> Bool
 isValidPawnMove' board color (Position r1 f1) (Position r2 f2)
@@ -48,6 +42,11 @@ isValidPawnMove' board color (Position r1 f1) (Position r2 f2)
   where
     (direction, initialRank) = if color == White then (1, 1) else (-1, 6)
 
+isValidPawnMove :: Chessboard -> Position -> Position -> Bool
+isValidPawnMove board from to =
+    case at board from of
+        Just (Piece color Pawn) -> isValidPawnMove' board color from to
+        _ -> False
 
 isValidKnightMove :: Chessboard -> Position -> Position -> Bool
 isValidKnightMove _ (Position r1 f1) (Position r2 f2) =

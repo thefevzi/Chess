@@ -19,6 +19,16 @@ parseMove _ = Nothing
 printBoard :: Chessboard -> IO ()
 printBoard = putStrLn . show
 
+ending :: IO ()
+ending = do
+    response <- getLine
+    if response == "y" || response == "Y"
+    then gameLoop initialPosition
+    else if response == "n" || response == "N"
+    then exitSuccess
+    else do
+        putStrLn "Please enter y/Y or n/N"
+        ending
 
 winnerEnding :: Color -> IO ()
 winnerEnding winner = do
@@ -31,17 +41,6 @@ stalemateEnding = do
     putStrLn "Stalemate! Draw."
     putStrLn "Play again? (y/n):"
     ending
-
-ending :: IO ()
-ending = do
-    response <- getLine
-    if response == "y" || response == "Y"
-    then gameLoop initialPosition
-    else if response == "n" || response == "N"
-    then exitSuccess
-    else do
-        putStrLn "Please enter y/Y or n/N"
-        ending
 
 -- Game loop for human vs. human
 gameLoop :: Chessboard -> IO ()
