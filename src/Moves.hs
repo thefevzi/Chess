@@ -70,7 +70,6 @@ leavesKingInCheck board from to =
     let newBoard = movePiece board from to
     in isInCheck newBoard (nextMove board)
 
-
 -- Function to validate a move
 isValidMove :: Chessboard -> Position -> Position -> Bool
 isValidMove board from to =
