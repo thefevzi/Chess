@@ -27,5 +27,5 @@ cabal run chess 2, starts Human vs AI mod
 • Castling [X] <br />
 • Pawn promotion [X] <br />
 • Pinned check [X] <br />
-• Stalemate [ ] <br />
+• Stalemate [X] <br />
 • Pawn to not hope over pieces [X]
