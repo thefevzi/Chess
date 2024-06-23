@@ -1,7 +1,8 @@
 {-# LANGUAGE BangPatterns #-}
 
 module WinCheck (
-    isCheckmate
+    isCheckmate,
+    isStalemate
 ) where
 
 import Chessboard
@@ -12,6 +13,10 @@ import Moves (isValidMove, isInCheck)
 -- Check if there is a checkmate?
 isCheckmate :: Chessboard -> Color -> Bool
 isCheckmate board color = isInCheck board color && noLegalMoves board color
+
+-- Check if there is a stalemate?
+isStalemate :: Chessboard -> Color -> Bool
+isStalemate board color = not (isInCheck board color) && noLegalMoves board color
 
 -- Checking if there are any legal moves?
 noLegalMoves :: Chessboard -> Color -> Bool

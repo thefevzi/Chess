@@ -23,10 +23,24 @@ endofGame :: Color -> IO ()
 endofGame winner = do
     putStrLn $ "Checkmate! " ++ show winner ++ " wins."
     putStrLn "Take your revenge? (y/n):"
-    revenge <- getLine
-    if revenge == "y" || revenge == "Y"
+    handleEndInput
+
+endOfStalemate :: IO ()
+endOfStalemate = do
+    putStrLn "Stalemate! Draw."
+    putStrLn "Play again? (y/n):"
+    handleEndInput
+
+handleEndInput :: IO ()
+handleEndInput = do
+    response <- getLine
+    if response == "y" || response == "Y"
     then gameLoop initialPosition
-    else putStrLn "Maybe Later." >> exitSuccess
+    else if response == "n" || response == "N"
+    then exitSuccess
+    else do
+        putStrLn "Please enter y/Y or n/N"
+        handleEndInput
 
 -- Game loop for human vs. human
 gameLoop :: Chessboard -> IO ()
@@ -34,9 +48,11 @@ gameLoop board = do
     printBoard board
     if isCheckmate board (nextMove board)
     then endofGame (other (nextMove board))
-    else if isInCheck board (nextMove board)
-         then putStrLn $ "Check! " ++ show (nextMove board) ++ " is in check."
-         else putStrLn $ "Next move: " ++ show (nextMove board)
+    else if isStalemate board (nextMove board)
+         then endOfStalemate
+         else if isInCheck board (nextMove board)
+              then putStrLn $ "Check! " ++ show (nextMove board) ++ " is in check."
+              else putStrLn $ "Next move: " ++ show (nextMove board)
     putStrLn "Enter your move (e.g., d2d4):"
     input <- getLine
     case parseMove input of
@@ -61,11 +77,12 @@ gameLoop board = do
                                 then do
                                     printBoard newBoard
                                     endofGame (other (nextMove newBoard))
-                                else gameLoop newBoard
+                                else if isStalemate newBoard (nextMove newBoard)
+                                     then endOfStalemate
+                                     else gameLoop newBoard
                     else do
                         putStrLn "Invalid move. Try again."
                         gameLoop board
-
 main :: IO ()
 main = do
     args <- getArgs

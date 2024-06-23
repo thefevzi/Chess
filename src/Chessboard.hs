@@ -117,13 +117,13 @@ movePiece board from to =
             then board
             else
                 let board' = update to piece $ remove from board
-                in if Promotion piece to
+                in if promotion piece to
                    then update to (promotePawn piece Queen) board'
                    else board'
   where
-    Promotion (Piece White Pawn) (Position 0 _) = True
-    Promotion (Piece Black Pawn) (Position 7 _) = True
-    Promotion _ _ = False
+    promotion (Piece White Pawn) (Position 0 _) = True
+    promotion (Piece Black Pawn) (Position 7 _) = True
+    promotion _ _ = False
 
 -- Pawn Promotion --
 promotePawn :: Piece -> PieceType -> Piece
@@ -139,5 +139,6 @@ movePieceCastling board from to =
             in board2
         _ -> board
     where
-        rookFrom = if file to > file from then Position (rank from) 7 else Position (rank from) 0
+        rookFrom = if file to > file from then Position (rank from) 7 
+        else Position (rank from) 0
         rookTo = Position (rank from) ((file from + file to + 1) `div` 2)
