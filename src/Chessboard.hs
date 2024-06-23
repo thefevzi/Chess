@@ -124,7 +124,7 @@ promotePawn :: Piece -> PieceType -> Piece
 promotePawn (Piece color Pawn) newType = Piece color newType
 promotePawn piece _ = piece 
 
-
+-- Castling setting kings and rooks positions, checking for movemenent
 kingSet :: Color -> Chessboard -> Chessboard
 kingSet White cb = cb { didKingMove = (True, snd (didKingMove cb)) }
 kingSet Black cb = cb { didKingMove = (fst (didKingMove cb), True) }

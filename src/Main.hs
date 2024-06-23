@@ -19,6 +19,30 @@ parseMove _ = Nothing
 printBoard :: Chessboard -> IO ()
 printBoard = putStrLn . show
 
+
+winnerEnding :: Color -> IO ()
+winnerEnding winner = do
+    putStrLn $ "Checkmate! " ++ show winner ++ " wins."
+    putStrLn "Take your revenge? (y/n):"
+    ending
+
+stalemateEnding :: IO ()
+stalemateEnding = do
+    putStrLn "Stalemate! Draw."
+    putStrLn "Play again? (y/n):"
+    ending
+
+ending :: IO ()
+ending = do
+    response <- getLine
+    if response == "y" || response == "Y"
+    then gameLoop initialPosition
+    else if response == "n" || response == "N"
+    then exitSuccess
+    else do
+        putStrLn "Please enter y/Y or n/N"
+        ending
+
 -- Game loop for human vs. human
 gameLoop :: Chessboard -> IO ()
 gameLoop board = do
@@ -62,30 +86,6 @@ gameLoop board = do
                         gameLoop board
 
 
-
-ending :: IO ()
-ending = do
-    response <- getLine
-    if response == "y" || response == "Y"
-    then gameLoop initialPosition
-    else if response == "n" || response == "N"
-    then exitSuccess
-    else do
-        putStrLn "Please enter y/Y or n/N"
-        ending
-
-winnerEnding :: Color -> IO ()
-winnerEnding winner = do
-    putStrLn $ "Checkmate! " ++ show winner ++ " wins."
-    putStrLn "Take your revenge? (y/n):"
-    ending
-
-stalemateEnding :: IO ()
-stalemateEnding = do
-    putStrLn "Stalemate! Draw."
-    putStrLn "Play again? (y/n):"
-    ending
-
 main :: IO ()
 main = do
     args <- getArgs
@@ -93,7 +93,7 @@ main = do
         ["1"] -> do
             putStrLn "Starting Human vs. Human Chess Game..."
             putStrLn "Welcome to Haskell Chess"
-            putStrLn "Castling is done by moving the king to the position (e.g, e1g1)"
+            putStrLn "NOTE: Castling is done by moving the king to the position (e.g, e1g1)"
             gameLoop initialPosition
         ["2"] -> do        --TODO : depth argument might run as cabal run chess 2 <depth>
             putStrLn "Starting Human vs. AI Chess Game..."

@@ -11,26 +11,6 @@ import Position
 import Color
 import Data.Maybe (isJust, isNothing, fromJust)
 
-
--- Checking ValidPawnMove for White and Black pawns
-isValidPawnMove' :: Chessboard -> Color -> Position -> Position -> Bool
-isValidPawnMove' board color (Position r1 f1) (Position r2 f2)
-    | r2 == r1 + direction && f1 == f2 && isNothing (at board (Position r2 f2)) = True 
-    | r1 == initialRank && r2 == r1 + 2 * direction && f1 == f2 &&
-     isNothing (at board (Position (r1 + direction) f1))
-      && isNothing (at board (Position r2 f2)) = True 
-    | r2 == r1 + direction && abs (f2 - f1) == 1 && isJust (at board (Position r2 f2)) = True
-    | otherwise = False
-  where
-    (direction, initialRank) = if color == White then (1, 1) else (-1, 6)
-
-isValidPawnMove :: Chessboard -> Position -> Position -> Bool
-isValidPawnMove board from to =
-    case at board from of
-        Just (Piece color Pawn) -> isValidPawnMove' board color from to
-        _ -> False
-
-
 -- Helper functions for straight and diagonal moves
 isValidStraightMove :: Chessboard -> Position -> Position -> Bool
 isValidStraightMove board (Position r1 f1) (Position r2 f2)
@@ -49,6 +29,24 @@ isValidDiagonalMove board (Position r1 f1) (Position r2 f2)
     where
         dr = if r2 > r1 then 1 else -1
         df = if f2 > f1 then 1 else -1
+
+isValidPawnMove :: Chessboard -> Position -> Position -> Bool
+isValidPawnMove board from to =
+    case at board from of
+        Just (Piece color Pawn) -> isValidPawnMove' board color from to
+        _ -> False
+
+-- Checking ValidPawnMove for White and Black pawns
+isValidPawnMove' :: Chessboard -> Color -> Position -> Position -> Bool
+isValidPawnMove' board color (Position r1 f1) (Position r2 f2)
+    | r2 == r1 + direction && f1 == f2 && isNothing (at board (Position r2 f2)) = True 
+    | r1 == initialRank && r2 == r1 + 2 * direction && f1 == f2 &&
+     isNothing (at board (Position (r1 + direction) f1))
+      && isNothing (at board (Position r2 f2)) = True 
+    | r2 == r1 + direction && abs (f2 - f1) == 1 && isJust (at board (Position r2 f2)) = True
+    | otherwise = False
+  where
+    (direction, initialRank) = if color == White then (1, 1) else (-1, 6)
 
 
 isValidKnightMove :: Chessboard -> Position -> Position -> Bool
@@ -96,20 +94,27 @@ opponentPieces :: Chessboard -> Color -> [Position]
 opponentPieces board color = [pos | (pos, Just (Piece c _))
  <- zip [Position r f | r <- [0..7], f <- [0..7]] (toList board), c == color]
 
--- Check if a given color is in check
+-- Find the position of the king of the given color
+kingPos :: Chessboard -> Color -> Maybe Position
+kingPos board color =
+    case [pos | (pos, Just (Piece c King))
+     <- zip [Position r f | r <- [0..7], f <- [0..7]] 
+     (toList board), c == color] of
+        []     -> Nothing
+        (k:_)  -> Just k
+
 isInCheck :: Chessboard -> Color -> Bool
 isInCheck board color =
     case kingPos board color of
         Nothing -> False
         Just kp -> any (canAttack board kp) (opponentPieces board (other color))
 
--- Function to check if it leaves the king in check
 leavesKingInCheck :: Chessboard -> Position -> Position -> Bool
 leavesKingInCheck board from to =
     let newBoard = movePiece board from to
     in isInCheck newBoard (nextMove board)
 
--- Function to validate a move
+-- Validate Move
 isValidMove :: Chessboard -> Position -> Position -> Bool
 isValidMove board from to =
     isJust (at board from) &&
@@ -142,12 +147,3 @@ isValidCastleMove board (Position r1 f1) (Position r2 f2)
              (nextMove board))) (Position r1 f1 : betweenPositions)
         in isJust rook && color (fromJust rook) == nextMoveColor
            && emptyBetween && kingNotMoved && rookNotMoved && noCheck
-
--- Find the position of the king of the given color
-kingPos :: Chessboard -> Color -> Maybe Position
-kingPos board color =
-    case [pos | (pos, Just (Piece c King))
-     <- zip [Position r f | r <- [0..7], f <- [0..7]] 
-     (toList board), c == color] of
-        []     -> Nothing
-        (k:_)  -> Just k
