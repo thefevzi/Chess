@@ -19,18 +19,21 @@ parseMove _ = Nothing
 printBoard :: Chessboard -> IO ()
 printBoard = putStrLn . show
 
+endofGame :: Color -> IO ()
+endofGame winner = do
+    putStrLn $ "Checkmate! " ++ show winner ++ " wins."
+    putStrLn "Take your revenge? (y/n):"
+    revenge <- getLine
+    if revenge == "y" || revenge == "Y"
+    then gameLoop initialPosition
+    else putStrLn "Maybe Later." >> exitSuccess
+
 -- Game loop for human vs. human
 gameLoop :: Chessboard -> IO ()
 gameLoop board = do
     printBoard board
     if isCheckmate board (nextMove board)
-    then do
-        putStrLn $ "Checkmate! " ++ show (other (nextMove board)) ++ " wins."
-        putStrLn "Take your revenge? (y/n):"
-        revenge <- getLine
-        if revenge == "y" || revenge == "Y"
-        then gameLoop initialPosition
-        else putStrLn "Maybe Later." >> exitSuccess
+    then endofGame (other (nextMove board))
     else if isInCheck board (nextMove board)
          then putStrLn $ "Check! " ++ show (nextMove board) ++ " is in check."
          else putStrLn $ "Next move: " ++ show (nextMove board)
@@ -41,22 +44,27 @@ gameLoop board = do
             putStrLn "Invalid move format. Try again."
             gameLoop board
         Just (from, to) ->
-            if isValidMove board from to
-            then if isValidCastleMove board from to
-                 then gameLoop (movePieceCastling (switch board) from to)
-                 else if isCheckmate (movePiece (switch board) from to) (nextMove board)
-                      then do
-                          printBoard (movePiece (switch board) from to)
-                          putStrLn $ "Checkmate! " ++ show (other (nextMove board)) ++ " wins."
-                          putStrLn "Take your revenge? (y/n):"
-                          revenge <- getLine
-                          if revenge == "y" || revenge == "Y"
-                          then gameLoop initialPosition
-                          else putStrLn "Maybe Later." >> exitSuccess
-                      else gameLoop (movePiece (switch board) from to)
-            else do
-                putStrLn "Invalid move. Try again."
-                gameLoop board
+            case at board from of
+                Nothing -> do
+                    putStrLn "I can't see any piece in that position"
+                    gameLoop board
+                Just piece ->
+                    if color piece /= nextMove board
+                    then do
+                        putStrLn "That's not your piece!"
+                        gameLoop board
+                    else if isValidMove board from to
+                        then if isValidCastleMove board from to
+                            then gameLoop (switch $ movePieceCastling board from to)
+                            else let newBoard = switch $ movePiece board from to in
+                                if isCheckmate newBoard (nextMove newBoard)
+                                then do
+                                    printBoard newBoard
+                                    endofGame (other (nextMove newBoard))
+                                else gameLoop newBoard
+                    else do
+                        putStrLn "Invalid move. Try again."
+                        gameLoop board
 
 main :: IO ()
 main = do
@@ -70,7 +78,7 @@ main = do
         ["2"] -> do
             putStrLn "Starting Human vs. AI Chess Game..."
             putStrLn "Welcome to Haskell Chess"
-            putStrLn "This part will be implemented"
-            --exitFailure
+            putStrLn "Black"
+            putStrLn "Human vs. AI mode is not implemented yet."
             exitSuccess
-        _ -> putStrLn "Please choose: chess 1 (for Human vs Human) | chess 2 (for Human vs AI)"
+        _ -> putStrLn "Usage: chess 1 (for Human vs. Human) or chess 2 (for Human vs. AI)" >> exitSuccess
