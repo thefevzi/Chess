@@ -122,7 +122,7 @@ movePiece board from to =
         Nothing -> board
         Just piece ->
             if color piece /= nextMove board
-            then board  -- It's not this player's turn
+            then board
             else
                 let board' = update to piece $ remove from board
                 in if isPromotion piece to
