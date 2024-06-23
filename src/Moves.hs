@@ -83,7 +83,7 @@ isValidMove board from to =
 isInCheck :: Chessboard -> Color -> Bool
 isInCheck board color =
     case kingPos board color of
-        Nothing -> False  -- King not found, assume not in check (should not happen in a valid game)
+        Nothing -> False
         Just kp -> any (canAttack board kp) (opponentPieces board (other color))
 
 -- Checks if a piece can attack a position -- isThreatened function removed
@@ -129,7 +129,7 @@ isValidDiagonalMove board (Position r1 f1) (Position r2 f2)
         dr = if r2 > r1 then 1 else -1
         df = if f2 > f1 then 1 else -1
 
--- Find the position of the king of the given color -- King not found error has been added
+-- Find the position of the king of the given color
 kingPos :: Chessboard -> Color -> Maybe Position
 kingPos board color =
     case [pos | (pos, Just (Piece c King)) <- zip [Position r f | r <- [0..7], f <- [0..7]] (toList board), c == color] of
