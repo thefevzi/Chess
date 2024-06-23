@@ -44,11 +44,11 @@ isValidPawnMove board from to =
 isValidPawnMove' :: Chessboard -> Color -> Position -> Position -> Bool
 isValidPawnMove' board color (Position r1 f1) (Position r2 f2)
     | r2 == r1 + direction && f1 == f2 && isNothing (at board (Position r2 f2)) = True 
-    | r1 == initialRank && r2 == r1 + 2 * direction && f1 == f2 && isNothing (at board (Position r2 f2)) = True 
+    | r1 == initialRank && r2 == r1 + 2 * direction && f1 == f2 && isNothing (at board (Position (r1 + direction) f1)) && isNothing (at board (Position r2 f2)) = True 
     | r2 == r1 + direction && abs (f2 - f1) == 1 && isJust (at board (Position r2 f2)) = True
     | otherwise = False
   where
-    (direction, initialRank) = if color == White then (1, 1) else (-1, 6) 
+    (direction, initialRank) = if color == White then (1, 1) else (-1, 6)
 
 -- Castling
 isValidCastleMove :: Chessboard -> Position -> Position -> Bool
@@ -68,20 +68,31 @@ isValidCastleMove board (Position r1 f1) (Position r2 f2)
 leavesKingInCheck :: Chessboard -> Position -> Position -> Bool
 leavesKingInCheck board from to =
     let newBoard = movePiece board from to
-    in isInCheck newBoard (color $ fromJust $ at board from)
+    in isInCheck newBoard (nextMove board)
+
 
 -- Function to validate a move
 isValidMove :: Chessboard -> Position -> Position -> Bool
 isValidMove board from to =
     isJust (at board from) &&
-    (toIndex from /= toIndex to) &&
+    from /= to &&
     isValidPieceMove board from to &&
     not (leavesKingInCheck board from to) &&
-    (maybe True (\p -> color p /= color (fromJust (at board from))) (at board to))
+    (all (\p -> color p /= color (fromJust (at board from))) (at board to))
 
 -- Check if a given color is in check
 isInCheck :: Chessboard -> Color -> Bool
-isInCheck board color = any (isThreatened board (kingPos board color)) (opponentPieces board (other color))
+isInCheck board color =
+    case kingPos board color of
+        Nothing -> False  -- King not found, assume not in check (should not happen in a valid game)
+        Just kp -> any (canAttack board kp) (opponentPieces board (other color))
+
+-- Checks if a piece can attack a position -- isThreatened function removed
+canAttack :: Chessboard -> Position -> Position -> Bool
+canAttack board target from =
+    case at board from of
+        Nothing -> False
+        Just piece -> isValidPieceMove (update target (fromJust (at board from)) board) from target
 
 isValidKnightMove :: Chessboard -> Position -> Position -> Bool
 isValidKnightMove _ (Position r1 f1) (Position r2 f2) =
@@ -90,14 +101,13 @@ isValidKnightMove _ (Position r1 f1) (Position r2 f2) =
     in (dr == 2 && df == 1) || (dr == 1 && df == 2)
 
 isValidBishopMove :: Chessboard -> Position -> Position -> Bool
-isValidBishopMove board from to = isValidDiagonalMove board from to
+isValidBishopMove = isValidDiagonalMove
 
 isValidRookMove :: Chessboard -> Position -> Position -> Bool
-isValidRookMove board from to = isValidStraightMove board from to
+isValidRookMove = isValidStraightMove
 
 isValidQueenMove :: Chessboard -> Position -> Position -> Bool
-isValidQueenMove board from to =
-    isValidStraightMove board from to || isValidDiagonalMove board from to
+isValidQueenMove board from to = isValidStraightMove board from to || isValidDiagonalMove board from to
 
 isValidKingMove :: Chessboard -> Position -> Position -> Bool
 isValidKingMove _ (Position r1 f1) (Position r2 f2) =
@@ -121,15 +131,12 @@ isValidDiagonalMove board (Position r1 f1) (Position r2 f2)
         df = if f2 > f1 then 1 else -1
 
 -- Find the position of the king of the given color -- King not found error has been added
-kingPos :: Chessboard -> Color -> Position
-kingPos board color = case [pos | (pos, Just (Piece c King)) <- zip [Position r f | r <- [0..7], f <- [0..7]] (toList board), c == color] of
-    [] -> error $ "kingPos: No king found on the board for " ++ show color ++ "\n" ++ show board
-    (k:_) -> k
+kingPos :: Chessboard -> Color -> Maybe Position
+kingPos board color =
+    case [pos | (pos, Just (Piece c King)) <- zip [Position r f | r <- [0..7], f <- [0..7]] (toList board), c == color] of
+        []     -> Nothing
+        (k:_)  -> Just k
 
 -- Get all the piece positions for opponent
 opponentPieces :: Chessboard -> Color -> [Position]
 opponentPieces board color = [pos | (pos, Just (Piece c _)) <- zip [Position r f | r <- [0..7], f <- [0..7]] (toList board), c == color]
-
--- If a position is threatened
-isThreatened :: Chessboard -> Position -> Position -> Bool
-isThreatened board pos oppPos = isValidMove (switch board) oppPos pos
