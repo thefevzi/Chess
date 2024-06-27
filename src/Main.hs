@@ -1,12 +1,13 @@
+import Data.Char (ord)
+import Data.Maybe (isJust)
 import System.Environment (getArgs)
 import System.Exit (exitSuccess)
+
 import Chessboard
 import Color
 import Position
 import Moves
 import CheckEnd
-import Data.Char (ord)
-import Data.Maybe (isJust)
 
 parseMove :: String -> Maybe (Position, Position)
 parseMove [f1, r1, f2, r2]
@@ -78,7 +79,9 @@ gameLoop board = do
                                 printBoard newBoard
                                 winnerEnding (other (nextMove newBoard))
                             else if isStalemate newBoard (nextMove newBoard)
-                                 then stalemateEnding
+                                 then do
+                                    printBoard newBoard
+                                    stalemateEnding                                
                                  else gameLoop newBoard
                     else do
                         putStrLn "Invalid move. Try again."
