@@ -1,3 +1,5 @@
+-- Chessboard.hs
+
 {-# LANGUAGE BangPatterns #-}
 
 module Chessboard
@@ -14,12 +16,13 @@ module Chessboard
     movePiece,
     movePieceCastling,
     color,
-    didKingMove,
-    didRookMove
+    kingsMoved,
+    rooksMoved
 ) where
 
 import qualified Data.Char as C
 import qualified Data.Vector as V
+
 import Color
 import Position
 
@@ -47,14 +50,13 @@ color (Piece c _) = c
 data Chessboard = Chessboard
     { toVector :: V.Vector (Maybe Piece)
     , nextMove :: Color
-    , didKingMove :: (Bool, Bool)
-    , didRookMove :: ((Bool, Bool), (Bool, Bool)) --W,L,F . B,L,R 
+    , kingsMoved :: [Color]
+    , rooksMoved :: [(Color, Int)]
     }
-
 
 switch :: Chessboard -> Chessboard
 switch cb = cb
-    { nextMove = other (nextMove cb) }
+ { nextMove = other (nextMove cb) }
 
 -- Board initialization
 instance Show Chessboard where
@@ -83,16 +85,16 @@ emptyBoard :: Color -> Chessboard
 emptyBoard firstPlayer = Chessboard
     { toVector = V.replicate 64 Nothing
     , nextMove = firstPlayer
-    , didKingMove = (False, False)
-    , didRookMove = ((False, False), (False, False))
+    , kingsMoved = []
+    , rooksMoved = []
     }
 
 initialPosition :: Chessboard
 initialPosition = Chessboard
     { toVector = V.fromList $ concat [whiteRearRow, whiteFrontRow, emptyRows, blackFrontRow, blackRearRow]
     , nextMove = White
-    , didKingMove = (False, False)
-    , didRookMove = ((False, False), (False, False))
+    , kingsMoved = []
+    , rooksMoved = []
     }
     where
     whiteRearRow  = map (Just . Piece White) [Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook]
@@ -101,7 +103,6 @@ initialPosition = Chessboard
     emptyRows     = concat (replicate 4 emptyRow)
     blackFrontRow = replicate 8 $ Just $ Piece Black Pawn
     blackRearRow  = map (Just . Piece Black) [Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook]
-
 
 -- Getting the piece to the given position
 at :: Chessboard -> Position -> Maybe Piece
@@ -122,29 +123,12 @@ toList cb = V.toList $ toVector cb
 -- Pawn Promotion --
 promotePawn :: Piece -> PieceType -> Piece
 promotePawn (Piece color Pawn) newType = Piece color newType
-promotePawn piece _ = piece 
+promotePawn piece _ = piece
 
--- Castling setting kings and rooks positions, checking for movemenent
-kingSet :: Color -> Chessboard -> Chessboard
-kingSet White cb = cb { didKingMove = (True, snd (didKingMove cb)) }
-kingSet Black cb = cb { didKingMove = (fst (didKingMove cb), True) }
-
-rookSet :: Color -> Int -> Chessboard -> Chessboard
-rookSet White index cb
-    | index == 0 = cb { didRookMove = ((True, snd (fst (didRookMove cb))), snd (didRookMove cb)) }
-    | index == 7 = cb { didRookMove = ((fst (fst (didRookMove cb)), True), snd (didRookMove cb)) }
-rookSet Black index cb
-    | index == 56 = cb { didRookMove = (fst (didRookMove cb), (True, snd (snd (didRookMove cb)))) }
-    | index == 63 = cb { didRookMove = (fst (didRookMove cb), (fst (snd (didRookMove cb)), True)) }
 
 updateFlags :: Piece -> Position -> Chessboard -> Chessboard
-updateFlags (Piece color King) from board = kingSet color board
-updateFlags (Piece color Rook) from board
-    | from == Position 0 0 = rookSet color 0 board
-    | from == Position 0 7 = rookSet color 7 board
-    | from == Position 7 0 = rookSet color 56 board
-    | from == Position 7 7 = rookSet color 63 board
-    | otherwise = board
+updateFlags (Piece color King) _ board = board { kingsMoved = color : kingsMoved board }
+updateFlags (Piece color Rook) from board = board { rooksMoved = (color, file from) : rooksMoved board }
 updateFlags _ _ board = board
 
 
@@ -166,13 +150,14 @@ movePiece board from to =
     promotion (Piece Black Pawn) (Position 7 _) = True
     promotion _ _ = False
 
+
 movePieceCastling :: Chessboard -> Position -> Position -> Chessboard
 movePieceCastling board from to =
     case (at board from, at board rookFrom) of
         (Just king, Just rook) ->
             let board1 = update to king (remove from board)
                 board2 = update rookTo rook (remove rookFrom board1)
-            in kingSet (color king) (rookSet (color rook) (toIndex rookFrom) board2)
+            in updateFlags king from $ updateFlags rook rookFrom board2
         _ -> board
     where
         rookFrom = if file to > file from then Position (rank from) 7 else Position (rank from) 0
