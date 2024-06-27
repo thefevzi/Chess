@@ -129,20 +129,15 @@ isValidCastleMove board (Position r1 f1) (Position r2 f2)
     | abs (f2 - f1) /= 2 = False
     | otherwise =
         let nextMoveColor = nextMove board
-            rookPos = if f2 > f1 then Position r1 7 
-            else Position r1 0
+            rookPos = if f2 > f1 then Position r1 7 else Position r1 0
             rook = at board rookPos
-            betweenPositions = if f2 > f1 then [Position r1 (f1 + 1), Position r1 (f1 + 2)] 
-            else [Position r1 (f1 - 1), Position r1 (f1 - 2)]
+            betweenPositions = if f2 > f1 then [Position r1 (f1 + 1), Position r1 (f1 + 2)] else [Position r1 (f1 - 1), Position r1 (f1 - 2), Position r1 (f1 - 3)]
             emptyBetween = all (isNothing . at board) betweenPositions
-            kingNotMoved = if nextMoveColor == White then not (fst (didKingMove board)) 
-            else not (snd (didKingMove board))
-            rookNotMoved = if nextMoveColor == White
-                           then if f2 > f1 then not (snd (fst (didRookMove board))) 
-                           else not (fst (fst (didRookMove board)))
-                           else if f2 > f1 then not (snd (snd (didRookMove board))) 
-                           else not (fst (snd (didRookMove board)))
-            noCheck = all (\pos -> not (isInCheck (movePiece board (Position r1 f1) pos)
-             (nextMove board))) (Position r1 f1 : betweenPositions)
-        in isJust rook && color (fromJust rook) == nextMoveColor
-           && emptyBetween && kingNotMoved && rookNotMoved && noCheck
+            kingNotMoved = nextMoveColor `notElem` kingsMoved board
+            rookNotMoved = (nextMoveColor, file rookPos) `notElem` rooksMoved board
+            noCheck = all (\pos -> not (isInCheck (movePiece board (Position r1 f1) pos) (nextMove board))) (Position r1 f1 : betweenPositions)
+            -- Only king can castle
+            isKing = case at board (Position r1 f1) of
+                        Just (Piece _ King) -> True
+                        _ -> False
+        in isKing && isJust rook && color (fromJust rook) == nextMoveColor && emptyBetween && kingNotMoved && rookNotMoved && noCheck
