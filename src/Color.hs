@@ -4,7 +4,7 @@ module Color (
 ) where
 
 data Color = White | Black
-    deriving (Eq, Show)
+    deriving (Eq, Ord, Show)
 -- Convert Color to string TODO, Done by Show
 
 other :: Color -> Color

@@ -1,11 +1,14 @@
 module Position (
     Position(..),
+    Move,
     toIndex,
     --fromIndex
 ) where
 
 data Position = Position { rank :: Int, file :: Int }
     deriving (Eq, Show)
+
+type Move = (Position, Position)
 
 toIndex :: Position -> Int
 toIndex (Position r f) = r * 8 + f
