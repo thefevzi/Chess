@@ -1,5 +1,3 @@
--- Chessboard.hs
-
 {-# LANGUAGE BangPatterns #-}
 
 module Chessboard
@@ -14,10 +12,9 @@ module Chessboard
     update,
     toList,
     movePiece,
-    movePieceCastling,
     color,
     kingsMoved,
-    rooksMoved
+    rooksMoved,
 ) where
 
 import qualified Data.Char as C
@@ -27,7 +24,7 @@ import Color
 import Position
 
 data PieceType = Pawn | Knight | Bishop | Rook | Queen | King
-    deriving (Eq)
+    deriving (Eq, Ord)
 
 instance Show PieceType where
     show Pawn   = "p"
@@ -38,7 +35,7 @@ instance Show PieceType where
     show King   = "k"
 
 data Piece = Piece Color PieceType
-    deriving Eq
+    deriving (Eq, Ord)
 
 instance Show Piece where
     show (Piece White t) = map C.toUpper $ show t
@@ -52,7 +49,7 @@ data Chessboard = Chessboard
     , nextMove :: Color
     , kingsMoved :: [Color]
     , rooksMoved :: [(Color, Int)]
-    }
+    } deriving (Eq, Ord)
 
 switch :: Chessboard -> Chessboard
 switch cb = cb
@@ -125,12 +122,10 @@ promotePawn :: Piece -> PieceType -> Piece
 promotePawn (Piece color Pawn) newType = Piece color newType
 promotePawn piece _ = piece
 
-
 updateFlags :: Piece -> Position -> Chessboard -> Chessboard
 updateFlags (Piece color King) _ board = board { kingsMoved = color : kingsMoved board }
 updateFlags (Piece color Rook) from board = board { rooksMoved = (color, file from) : rooksMoved board }
 updateFlags _ _ board = board
-
 
 movePiece :: Chessboard -> Position -> Position -> Chessboard
 movePiece board from to =
@@ -139,17 +134,22 @@ movePiece board from to =
         Just piece ->
             if color piece /= nextMove board
             then board
-            else
-                let board' = update to piece $ remove from board
-                    board'' = if promotion piece to
-                              then update to (promotePawn piece Queen) board'
-                              else board'
-                in updateFlags piece from board''
+            else if isCastlingMove piece from to
+                 then movePieceCastling board from to
+                 else
+                    let board' = update to piece $ remove from board
+                        board'' = if promotion piece to
+                                  then update to (promotePawn piece Queen) board'
+                                  else board'
+                    in updateFlags piece from board''
   where
     promotion (Piece White Pawn) (Position 0 _) = True
     promotion (Piece Black Pawn) (Position 7 _) = True
     promotion _ _ = False
 
+    isCastlingMove (Piece _ King) (Position r1 f1) (Position r2 f2) =
+        r1 == r2 && abs (f2 - f1) == 2
+    isCastlingMove _ _ _ = False
 
 movePieceCastling :: Chessboard -> Position -> Position -> Chessboard
 movePieceCastling board from to =
