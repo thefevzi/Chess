@@ -127,6 +127,18 @@ updateFlags (Piece color King) _ board = board { kingsMoved = color : kingsMoved
 updateFlags (Piece color Rook) from board = board { rooksMoved = (color, file from) : rooksMoved board }
 updateFlags _ _ board = board
 
+movePieceCastling :: Chessboard -> Position -> Position -> Chessboard
+movePieceCastling board from to =
+    case (at board from, at board rookFrom) of
+        (Just king, Just rook) ->
+            let board1 = update to king (remove from board)
+                board2 = update rookTo rook (remove rookFrom board1)
+            in updateFlags king from $ updateFlags rook rookFrom board2
+        _ -> board
+    where
+        rookFrom = if file to > file from then Position (rank from) 7 else Position (rank from) 0
+        rookTo = Position (rank from) ((file from + file to + 1) `div` 2)
+
 movePiece :: Chessboard -> Position -> Position -> Chessboard
 movePiece board from to =
     case at board from of
@@ -150,15 +162,3 @@ movePiece board from to =
     isCastlingMove (Piece _ King) (Position r1 f1) (Position r2 f2) =
         r1 == r2 && abs (f2 - f1) == 2
     isCastlingMove _ _ _ = False
-
-movePieceCastling :: Chessboard -> Position -> Position -> Chessboard
-movePieceCastling board from to =
-    case (at board from, at board rookFrom) of
-        (Just king, Just rook) ->
-            let board1 = update to king (remove from board)
-                board2 = update rookTo rook (remove rookFrom board1)
-            in updateFlags king from $ updateFlags rook rookFrom board2
-        _ -> board
-    where
-        rookFrom = if file to > file from then Position (rank from) 7 else Position (rank from) 0
-        rookTo = Position (rank from) ((file from + file to + 1) `div` 2)

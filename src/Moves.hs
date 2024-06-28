@@ -113,23 +113,6 @@ leavesKingInCheck board from to =
     let newBoard = movePiece board from to
     in isInCheck newBoard (nextMove board)
 
--- Validate Move
-isValidMove :: Chessboard -> Position -> Position -> Bool
-isValidMove board from to =
-    isJust (at board from) &&
-    from /= to &&
-    (isValidPieceMove board from to || isValidCastlingMove) &&
-    not (leavesKingInCheck board from to) &&
-    (all (\p -> color p /= color (fromJust (at board from))) (at board to))
-  where
-    isValidCastlingMove = 
-        case at board from of
-            Just (Piece _ King) -> isCastlingMove (Piece (nextMove board) King) from to
-             && isValidCastleRules board from to
-            _ -> False
-    isCastlingMove (Piece _ King) (Position r1 f1) (Position r2 f2) = r1 == r2 && abs (f2 - f1) == 2
-    isCastlingMove _ _ _ = False
-
 -- Castle Rules --
 isValidCastleRules :: Chessboard -> Position -> Position -> Bool
 isValidCastleRules board (Position r1 f1) (Position r2 f2) =
@@ -151,3 +134,20 @@ isValidCastleRules board (Position r1 f1) (Position r2 f2) =
                     _ -> False
     in isKing && isJust rook && color (fromJust rook) == nextMoveColor
      && emptyBetween && kingNotMoved && rookNotMoved && noCheck
+
+-- Validate Move
+isValidMove :: Chessboard -> Position -> Position -> Bool
+isValidMove board from to =
+    isJust (at board from) &&
+    from /= to &&
+    (isValidPieceMove board from to || isValidCastlingMove) &&
+    not (leavesKingInCheck board from to) &&
+    (all (\p -> color p /= color (fromJust (at board from))) (at board to))
+  where
+    isValidCastlingMove = 
+        case at board from of
+            Just (Piece _ King) -> isCastlingMove (Piece (nextMove board) King) from to
+             && isValidCastleRules board from to
+            _ -> False
+    isCastlingMove (Piece _ King) (Position r1 f1) (Position r2 f2) = r1 == r2 && abs (f2 - f1) == 2
+    isCastlingMove _ _ _ = False
