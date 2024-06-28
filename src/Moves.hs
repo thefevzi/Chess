@@ -2,13 +2,13 @@
 
 module Moves (
     isValidMove,
-    isValidCastleMove,
-    isInCheck
+    isInCheck,
 ) where
 
 import Chessboard
 import Position
 import Color
+
 import Data.Maybe (isJust, isNothing, fromJust)
 
 -- Helper functions for straight and diagonal moves
@@ -118,26 +118,36 @@ isValidMove :: Chessboard -> Position -> Position -> Bool
 isValidMove board from to =
     isJust (at board from) &&
     from /= to &&
-    isValidPieceMove board from to &&
+    (isValidPieceMove board from to || isValidCastlingMove) &&
     not (leavesKingInCheck board from to) &&
     (all (\p -> color p /= color (fromJust (at board from))) (at board to))
+  where
+    isValidCastlingMove = 
+        case at board from of
+            Just (Piece _ King) -> isCastlingMove (Piece (nextMove board) King) from to
+             && isValidCastleRules board from to
+            _ -> False
+    isCastlingMove (Piece _ King) (Position r1 f1) (Position r2 f2) = r1 == r2 && abs (f2 - f1) == 2
+    isCastlingMove _ _ _ = False
 
--- Castling
-isValidCastleMove :: Chessboard -> Position -> Position -> Bool
-isValidCastleMove board (Position r1 f1) (Position r2 f2)
-    | r1 /= r2 = False
-    | abs (f2 - f1) /= 2 = False
-    | otherwise =
-        let nextMoveColor = nextMove board
-            rookPos = if f2 > f1 then Position r1 7 else Position r1 0
-            rook = at board rookPos
-            betweenPositions = if f2 > f1 then [Position r1 (f1 + 1), Position r1 (f1 + 2)] else [Position r1 (f1 - 1), Position r1 (f1 - 2), Position r1 (f1 - 3)]
-            emptyBetween = all (isNothing . at board) betweenPositions
-            kingNotMoved = nextMoveColor `notElem` kingsMoved board
-            rookNotMoved = (nextMoveColor, file rookPos) `notElem` rooksMoved board
-            noCheck = all (\pos -> not (isInCheck (movePiece board (Position r1 f1) pos) (nextMove board))) (Position r1 f1 : betweenPositions)
-            -- Only king can castle
-            isKing = case at board (Position r1 f1) of
-                        Just (Piece _ King) -> True
-                        _ -> False
-        in isKing && isJust rook && color (fromJust rook) == nextMoveColor && emptyBetween && kingNotMoved && rookNotMoved && noCheck
+-- Castle Rules --
+isValidCastleRules :: Chessboard -> Position -> Position -> Bool
+isValidCastleRules board (Position r1 f1) (Position r2 f2) =
+    let nextMoveColor = nextMove board
+        rookPos = if f2 > f1 then Position r1 7 else Position r1 0
+        rook = at board rookPos
+        betweenPositions =
+             if f2 > f1
+                 then [Position r1 (f1 + 1), Position r1 (f1 + 2)]
+                  else [Position r1 (f1 - 1), Position r1 (f1 - 2), Position r1 (f1 - 3)]
+        emptyBetween = all (isNothing . at board) betweenPositions
+        kingNotMoved = nextMoveColor `notElem` kingsMoved board
+        rookNotMoved = (nextMoveColor, file rookPos) `notElem` rooksMoved board
+        noCheck = all (\pos -> not (isInCheck (movePiece board (Position r1 f1) pos)
+         (nextMove board))) (Position r1 f1 : betweenPositions)
+        isKing =
+             case at board (Position r1 f1) of
+                    Just (Piece _ King) -> True
+                    _ -> False
+    in isKing && isJust rook && color (fromJust rook) == nextMoveColor
+     && emptyBetween && kingNotMoved && rookNotMoved && noCheck
