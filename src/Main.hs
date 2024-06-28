@@ -2,7 +2,6 @@ import Data.Char (ord)
 import Data.Maybe (isJust)
 import System.Environment (getArgs)
 import System.Exit (exitSuccess)
-import Control.Monad (when)
 
 import Chessboard
 import Color
@@ -102,5 +101,6 @@ main = do
             putStrLn "Starting Human vs. AI Chess Game..."
             putStrLn "Welcome to Haskell Chess"
             putStrLn $ "Depth is: " ++ show depth
-            gameLoopAI initialPosition depth
+            --gameLoopAI initialPosition depth
+            exitSuccess
         _ -> putStrLn "Usage: chess 1 (for Human vs. Human) or chess 2 <depth> (for Human vs. AI)" >> exitSuccess
