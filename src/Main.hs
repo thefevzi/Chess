@@ -2,12 +2,14 @@ import Data.Char (ord)
 import Data.Maybe (isJust)
 import System.Environment (getArgs)
 import System.Exit (exitSuccess)
+import Control.Monad (when)
 
 import Chessboard
 import Color
 import Position
 import Moves
 import CheckEnd
+import AI
 
 parseMove :: String -> Maybe (Position, Position)
 parseMove [f1, r1, f2, r2]
@@ -61,9 +63,7 @@ gameLoop board = do
             putStrLn "Invalid move format. Try again."
             gameLoop board
         Just (from, to) ->
-            if isValidCastleMove board from to
-            then gameLoop (switch $ movePieceCastling board from to)
-            else case at board from of
+            case at board from of
                 Nothing -> do
                     putStrLn "I can't see any piece in that position"
                     gameLoop board
@@ -97,10 +97,10 @@ main = do
             putStrLn "Welcome to Haskell Chess"
             putStrLn "NOTE: Castling is done by moving the king to the position (e.g, e1g1)"
             gameLoop initialPosition
-        ["2"] -> do        --TODO : depth argument might run as cabal run chess 2 <depth>
+        ["2", depthStr] -> do
+            let depth = read depthStr :: Int
             putStrLn "Starting Human vs. AI Chess Game..."
             putStrLn "Welcome to Haskell Chess"
-            putStrLn "This is a work in progress for now, please try it later."
-            --gameLoop initialPosition
-            exitSuccess
-        _ -> putStrLn "Usage: chess 1 (for Human vs. Human) or chess 2 (for Human vs. AI)" >> exitSuccess
+            putStrLn $ "Depth is: " ++ show depth
+            gameLoopAI initialPosition depth
+        _ -> putStrLn "Usage: chess 1 (for Human vs. Human) or chess 2 <depth> (for Human vs. AI)" >> exitSuccess
