@@ -6,7 +6,7 @@ module Position (
 ) where
 
 data Position = Position { rank :: Int, file :: Int }
-    deriving (Eq, Show)
+    deriving (Eq, Show, Ord)
 
 type Move = (Position, Position)
 
