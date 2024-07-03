@@ -59,7 +59,9 @@ minimax board color depth alpha beta
 -- Selecting the best move for AI --
 bestMove :: Chessboard -> Color -> Int -> (Position, Position)
 bestMove board aiColor depth =
-  let scoredMoves = [(minimax (switch $ movePiece board from to) (other aiColor) (depth - 1) (-9999) 9999, (from, to)) | (from, to) <- moves]
+  let scoredMoves = [(minimax (switch $ movePiece board from to)
+                    (other aiColor) (depth - 1) (-9999) 9999, (from, to))
+                     | (from, to) <- moves]
   in snd $ maximum scoredMoves
   where
     moves = generateMoves board aiColor
