@@ -1,6 +1,6 @@
 # Chess
 Simple Chess Game in Haskell with excluding the rules en passant and threefold repetition for a draw.
-This is a work in progress for now, it features only human vs human mod.
+This is a work in progress for now, AI is not making very healthy decisions
 
 # Description
 I have created this project for my Non-procedural Programming class as a semester project. The game can be played in two mods:
@@ -21,8 +21,8 @@ cabal run chess 1, starts Human vs Human mod <br />
 cabal run chess 2, starts Human vs AI mod
 
 ## Features to be Added
-• AI which uses minimax algorithm, enhanced by alpha-beta pruning [ ] <br />
-• The depth of search for AI [ ] <br />
+• AI which uses minimax algorithm, enhanced by alpha-beta pruning [X] <br />
+• The depth of search for AI [X] <br />
 • cabal arguments [X] <br />
 • Castling [X] <br />
 • Pawn promotion [X] <br />
