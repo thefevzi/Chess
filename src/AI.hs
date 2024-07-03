@@ -21,18 +21,12 @@ generateMoves board color =
 evaluateBoard :: Chessboard -> Int
 evaluateBoard board = sum [pieceValue piece | Just piece <- toList board]
   where
-    pieceValue (Piece White Pawn) = -1
-    pieceValue (Piece Black Pawn) = 1
-    pieceValue (Piece White Knight) = -3
-    pieceValue (Piece Black Knight) = 3
-    pieceValue (Piece White Bishop) = -3
-    pieceValue (Piece Black Bishop) = 3
-    pieceValue (Piece White Rook) = -5
-    pieceValue (Piece Black Rook) = 5
-    pieceValue (Piece White Queen) = -9
-    pieceValue (Piece Black Queen) = 9
-    pieceValue (Piece White King) = -9999
-    pieceValue (Piece Black King) = 9999
+    pieceValue (Piece color Pawn)   = if color == White then -1 else 1
+    pieceValue (Piece color Knight) = if color == White then -3 else 3
+    pieceValue (Piece color Bishop) = if color == White then -3 else 3
+    pieceValue (Piece color Rook)   = if color == White then -5 else 5
+    pieceValue (Piece color Queen)  = if color == White then -9 else 9
+    pieceValue (Piece color King)   = if color == White then -9999 else 9999
 
 minimax :: Chessboard -> Color -> Int -> Int -> Int -> Int
 minimax board color depth alpha beta
