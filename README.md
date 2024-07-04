@@ -1,6 +1,5 @@
 # Chess
 Simple Chess Game in Haskell with excluding the rules en passant and threefold repetition for a draw.
-This is a work in progress for now, AI is not making very healthy decisions
 
 # Description
 I have created this project for my Non-procedural Programming class as a semester project. The game can be played in two mods:
