@@ -8,6 +8,7 @@ import Position
 import Color
 import CheckEnd
 import Moves
+
 import Data.Maybe (fromJust)
 
 -- Generating all legal moves for given color (noLegalMoves from CheckEnd.hs)--
