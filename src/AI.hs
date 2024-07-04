@@ -8,6 +8,7 @@ import Position
 import Color
 import CheckEnd
 import Moves
+import Data.Maybe (fromJust)
 
 -- Generating all legal moves for given color (noLegalMoves from CheckEnd.hs)--
 generateMoves :: Chessboard -> Color -> [(Position, Position)]
@@ -21,12 +22,9 @@ generateMoves board color =
 evaluateBoard :: Chessboard -> Int
 evaluateBoard board = sum [pieceValue piece | Just piece <- toList board]
   where
-    pieceValue (Piece color Pawn)   = if color == White then -1 else 1
-    pieceValue (Piece color Knight) = if color == White then -3 else 3
-    pieceValue (Piece color Bishop) = if color == White then -3 else 3
-    pieceValue (Piece color Rook)   = if color == White then -5 else 5
-    pieceValue (Piece color Queen)  = if color == White then -9 else 9
-    pieceValue (Piece color King)   = if color == White then -9999 else 9999
+    values = [(Pawn, 1), (Knight, 3), (Bishop, 3), (Rook, 5), (Queen, 9), (King, 9999)]
+    pieceValue (Piece color kind) =
+      (if color == White then -1 else 1) * fromJust (lookup kind values)
 
 minimax :: Chessboard -> Color -> Int -> Int -> Int -> Int
 minimax board color depth alpha beta
@@ -56,6 +54,8 @@ bestMove board aiColor depth =
   let scoredMoves = [(minimax (switch $ movePiece board from to)
                     (other aiColor) (depth - 1) (-9999) 9999, (from, to))
                      | (from, to) <- moves]
-  in snd $ maximum scoredMoves
+  in if aiColor == White
+     then snd $ minimum scoredMoves
+     else snd $ maximum scoredMoves
   where
     moves = generateMoves board aiColor
